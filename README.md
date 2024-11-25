@@ -20,3 +20,10 @@ run lines 69-76 to simulate the joint effects of changes in maximal induction st
 set line 79 to true to save the dataframe as a CSV
 
 run line 86 to get an iteractive plot of the resulting limit cycles for all combinations of perturbations
+
+
+## TO-DO
+- list of packages
+- better way to define and pass dirs with perturbation specifications
+- update model definition to include the translation initiation efficiency parameter
+- provide more options for the ODE solver
