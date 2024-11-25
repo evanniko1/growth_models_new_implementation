@@ -15,7 +15,7 @@ perturb_info =  Dict(
                                "binding_rate"   => (-2, 0),
                                #"unbinding_rate" => (-4, -2)
                                ),
-    "range_size" => 10
+    "range_size" => 5
 )
 
 # dictionary for ODESystem-related info
@@ -114,21 +114,4 @@ function get_results(; equations_dict::Dict, solutions_dict::Dict)
     end
 
     return fractions_dict
-end
-
-# GENERATE AN EXTRA DICT THAT INCLUDES (STEADY STATE (END) VALUES, VALUE USED) (??)
-# initialize fractions dict
-fractions_dict = Dict()
-# use the left hand side of the ODE system definition to assign each species to the correct fraction
-for fraction_key in keys(ha_eqs)
-    fractions_dict[fraction_key] = Dict(string(ha_eqs[fraction_key][idx].lhs)[17:end-4] => [] for idx in range(1, size(ha_eqs[fraction_key])[1]))
-end
-
-# go over the dictionary containing solutions of the ODE system and organize accordingly
-for key_frac in keys(fractions_dict)
-    for key_res in keys(res_dict)
-        if key_res in keys(fractions_dict[key_frac])
-            fractions_dict[key_frac][key_res] = res_dict[key_res]
-        end
-    end
 end
