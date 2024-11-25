@@ -38,13 +38,10 @@ Main.GrowthModels._update!(ha_params, "w_max", 100.0)
 
 #-----------#
 
-# needs to be tested
+# needs to be tested 
 #res_dict, perturb_vals = perturb_one_param!(perturb_info = perturb_info, model_info = model_info, solver_info = solver_info);
 
 # Define a repressilator genetic circuit
-# NOTE: there is definitely an issue with formalism when it comes to stacking
-# I probably need to pass in a vector of variable names
-# let uss first do it the stupid way
 
 repr_eqs, repr_lam, repr_params, repr_ss = Main.GrowthModels.repr_model_eqs(input_eqs_dict   = base_eqs_dict,
                                                                             input_lam        = base_lam,
