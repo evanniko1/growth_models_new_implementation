@@ -5,30 +5,55 @@
 Note: the current setup is for Julia v1.8
 
 Agents v5.6.2
+
 CSV v0.10.9
+
 CairoMakie v0.8.13
+
 Catalyst v12.3.1
+
 ColorSchemes v3.26.0
+
 Combinatorics v1.0.2
+
 DataFrames v1.4.4
+
 DifferentialEquations v7.6.0
+
 Distributions v0.25.79
+
 GraphViz v0.2.0
+
 IJulia v1.23.3
+
 InteractiveDynamics v0.21.11
+
 LSODA v0.7.3
+
 LaTeXStrings v1.3.1
+
 Latexify v0.15.17
+
 MAT v0.10.4
+
 ModelingToolkit v8.34.0
+
 OrderedCollections v1.6.0
+
 OrdinaryDiffEq v6.31.2
+
 ParameterizedFunctions v5.15.0
+
 PlotlyBase v0.8.19
+
 Plots v1.36.3
+
 PyPlot v2.11.0
+
 StatsBase v0.33.21
+
 Sundials v4.15.1
+
 Symbolics v4.14.0
 
 
