@@ -153,7 +153,7 @@ function base_model_eqs(; R::Dict = Dict([
 end;
 
 function het_model_eqs(; input_eqs_dict::Dict, input_lam::Num, input_param_vals::Dict, input_ss_vals::Dict, R = 1)
-    @parameters w_max dm_h dp_h kb_h ku_h
+    @parameters w_max dm_h dp_h kb_h ku_h kappa_ini
     @variables t m_h(t) c_h(t) p_h(t) r(t) a(t)
     D = Differential(t)
 
@@ -163,6 +163,7 @@ function het_model_eqs(; input_eqs_dict::Dict, input_lam::Num, input_param_vals:
         "dp_h"  => dp_h  => log(2)/4
         "kb_h"  => kb_h  => 0.0095
         "ku_h"  => ku_h  => 1
+        "kappa_ini" => kappa_ini => 0.8
     ])
     het_ss_vals = Dict([
         "m_h" => m_h => 0.0
@@ -171,23 +172,23 @@ function het_model_eqs(; input_eqs_dict::Dict, input_lam::Num, input_param_vals:
     ])
 
     # add contribution to growth
-    lam = input_lam + c_h*gamma/M
+    lam = input_lam + (kappa_ini*c_h*gamma)/M
 
     # update all growth rates for the input system of equations
     upd_eqs_dict = update_eqs!(eqs_dict= input_eqs_dict, term = input_lam - lam);
 
     # define equations for heterologous species
     eqs_het = [
-        D(m_h) ~ R*w_max*a/(thetax+a) - (lam + dm_h)*m_h + gamma/nx*c_h - kb_h*r*m_h + ku_h*c_h
-        D(c_h) ~ -lam*c_h + kb_h*r*m_h - ku_h*c_h - gamma/nx*c_h
-        D(p_h) ~ gamma/nx*c_h - (lam + dp_h)*p_h
+        D(m_h) ~ R*w_max*a/(thetax+a) - (lam + dm_h)*m_h + (gamma/nx)*kappa_ini*c_h - kb_h*r*m_h + ku_h*(1-kappa_ini)*c_h
+        D(c_h) ~ -lam*c_h + kb_h*r*m_h - ku_h*(1-kappa_ini)*c_h - (gamma/nx)*kappa_ini*c_h
+        D(p_h) ~ (gamma/nx)*kappa_ini*c_h - (lam + dp_h)*p_h
     ];
     # update energy and ribosomal contributions
     eqs_r_pr_ha = [
-        D(r) ~ upd_eqs_dict["ribosomes"][1].rhs - kb_h*m_h*r + ku_h*c_h + gamma/nx*c_h
+        D(r) ~ upd_eqs_dict["ribosomes"][1].rhs - kb_h*m_h*r + ku_h*(1-kappa_ini)*c_h + (gamma/nx)*kappa_ini*c_h
     ];
     eqs_a_ha = [
-        D(a) ~ upd_eqs_dict["energy"][1].rhs - gamma*c_h
+        D(a) ~ upd_eqs_dict["energy"][1].rhs - gamma*kappa_ini*c_h
     ];
 
     # organize host_aware model equations in a dictionary
@@ -384,7 +385,13 @@ function perturb_multi_single_params!(; perturb_info::Dict, model_info::Dict, so
                               Main.GrowthModels._format(model_info["model_parameters"]); 
                               jac=solver_info["jacobian_opt"]);
             # call to solver
-            sol = solve(prob, solver_info["solver_option"]);
+            sol = solve(prob, 
+                        solver_info["solver_option"], 
+                        abstol=solver_info["abstol"],
+                        reltol=solver_info["reltol"], 
+                        maxiters=solver_info["max_iters"], 
+                        progress=solver_info["progress"], 
+                        isoutofdomain = solver_info["isoutofdomain"]);
 
             # map species to solutions
             species_to_solutions = (Main.GrowthModels.map_trajectories(model_info["model_name"], sol))
@@ -402,8 +409,8 @@ end;
 function perturb_multi_params!(; perturb_info::Dict, model_info::Dict, solver_info::Dict)
     # initialize results vector and iterator
     range_iterator_dict = OrderedDict(key => exp10.(range(perturb_info["range_to_perturb"][key][1],
-                                                        perturb_info["range_to_perturb"][key][2],
-                                                        length = perturb_info["range_size"])) for key in keys(perturb_info["param_to_perturb"]))
+                                                          perturb_info["range_to_perturb"][key][2],
+                                                          length = perturb_info["range_size"])) for key in keys(perturb_info["param_to_perturb"]))
 
     combinations_list = allcombinations_(values(range_iterator_dict)...)
 
@@ -414,19 +421,26 @@ function perturb_multi_params!(; perturb_info::Dict, model_info::Dict, solver_in
         for (idx, key) in enumerate(keys(perturb_info["param_to_perturb"]))
             for idx_param in range(1, length(perturb_info["param_to_perturb"][key]))
                 Main.GrowthModels._update!(model_info["model_parameters"],
-                                        perturb_info["param_to_perturb"][key][idx_param],
-                                        combi[idx])
+                                           perturb_info["param_to_perturb"][key][idx_param],
+                                           combi[idx])
             end
         end
 
         # call to ODEProblem
         prob = ODEProblem(model_info["model_name"], 
-                        Main.GrowthModels._format(model_info["steady_state_values"]), 
-                        model_info["integr_time"], 
-                        Main.GrowthModels._format(model_info["model_parameters"]), 
-                        jac=solver_info["jacobian_opt"]);
+                          Main.GrowthModels._format(model_info["steady_state_values"]), 
+                          model_info["integr_time"], 
+                          Main.GrowthModels._format(model_info["model_parameters"]), 
+                          jac=solver_info["jacobian_opt"]);
         # call to solver
-        sol = solve(prob, solver_info["solver_option"]);
+        sol = solve(prob, 
+                    solver_info["solver_option"], 
+                    abstol=solver_info["abstol"],
+                    reltol=solver_info["reltol"], 
+                    maxiters=solver_info["max_iters"], 
+                    progress=solver_info["progress"], 
+                    isoutofdomain = solver_info["isoutofdomain"]);
+
 
         # map species to solutions
         species_to_solutions = (Main.GrowthModels.map_trajectories(model_info["model_name"], sol))

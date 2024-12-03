@@ -1,5 +1,6 @@
 # PKGs
 include("GrowthModels.jl")
+include("perturbation_values.jl")
 using ModelingToolkit, DifferentialEquations, Main.GrowthModels, Plots, DataFrames, CSV, Combinatorics, OrderedCollections
 plotly()
 
@@ -35,6 +36,7 @@ plot(sol_h)
 # re-execute lines 28-29 to solve a new model
 Main.GrowthModels._update!(ha_params, "w_max", 100.0)
 
+res_dict, perturb_vals = perturb_one_param!(perturb_info = perturb_info, model_info = model_info, solver_info)
 
 #-----------#
 
@@ -76,8 +78,8 @@ res_dict, combi_list, range_itr_dict = Main.GrowthModels.perturb_multi_params!(p
 df = DataFrame(res_dict)
 
 # save the dataframe into a CSV 
-save_to_file = false
-file_name = "results_perturbation_induction_RBS.csv"
+save_to_file = true
+file_name = "results_perturbation_joint_induction_binding_rate.csv"
 if save_to_file
     CSV.write(file_name, df)
 end

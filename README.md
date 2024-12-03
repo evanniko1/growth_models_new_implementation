@@ -81,7 +81,7 @@ run line 86 to get an iteractive plot of the resulting limit cycles for all comb
 
 
 ## TO-DO
-- list of packages
-- better way to define and pass dirs with perturbation specifications
-- update model definition to include the translation initiation efficiency parameter
+- ~list of packages~
+- update model definition to include the translation initiation efficiency parameter 
 - provide more options for the ODE solver
+- better way to define and pass dirs with perturbation specifications
